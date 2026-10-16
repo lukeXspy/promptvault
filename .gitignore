@@ -1,0 +1,26 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.tgz
+
+# Local vaults — personal prompt data must never be committed
+/prompts/
+.promptvault/
+
+# Environment and credential files
+.env
+.env.*
+!.env.example
+.npmrc
+
+# Logs, temporaries and OS cruft
+*.log
+npm-debug.log*
+*.tmp
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Generated test reports
+test-results/

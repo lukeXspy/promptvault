@@ -1,0 +1,5 @@
+# Policy: LF for every text file on every platform; CRLF only for Windows
+# command scripts. Details and rationale: docs/DECISIONS.md (D60).
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
