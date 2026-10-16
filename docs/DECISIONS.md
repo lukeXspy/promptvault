@@ -785,6 +785,35 @@ commit `b59c533`) is green on all three jobs; the matrix is verified end to
 end:
 https://github.com/lukeXspy/promptvault/actions/runs/38943882635
 
+### D62 — Private vulnerability reporting enabled as the security channel
+
+Context: Q11 recorded that no private reporting channel existed and that
+GitHub Private Vulnerability Reporting was the planned one, enableable only
+once the repository existed as a public project. The maintainer enabled it on
+`lukeXspy/promptvault` on 2026-10-16 and confirmed it.
+
+Verified: checked on 2026-10-16 without authentication — the public Security
+tab serves the **Report a vulnerability** button pointing to
+`/lukeXspy/promptvault/security/advisories/new`, and the public API endpoint
+`GET /repos/lukeXspy/promptvault/private-vulnerability-reporting` returns
+`{"enabled":true}`. The reporting form itself requires a signed-in account,
+so the enablement was verified through the public surfaces above, not by
+submitting a report.
+
+Decision: SECURITY.md replaces the interim "open an issue to request a
+private contact" guidance with GitHub Private Vulnerability Reporting — the
+repository Security tab, or
+<https://github.com/lukeXspy/promptvault/security/advisories/new> — and asks
+for a minimal description, reproduction steps, affected version/commit, OS
+and Node.js version, while forbidding secrets, tokens, personal vaults and
+personal data in reports. The scope and limitations sections (plain UTF-8
+text, no encryption) are unchanged, and no response-time, patch or bug-bounty
+commitment is made.
+
+Rationale: the channel now exists and is the project's own planned one;
+keeping the interim request would misdescribe the repository. Q11 is
+resolved, and no release blocker remains from the security channel.
+
 ## Open questions
 
 - **Q1 — License.** Resolved in the Stage 11 closure review: MIT finalized
@@ -817,12 +846,17 @@ https://github.com/lukeXspy/promptvault/actions/runs/38943882635
   MVP; the escaping policy (D15) is deliberate.
 - **Q10 — Richer search.** Tokenized, multi-term or tag-AND queries are out
   of MVP scope; collect real usage before extending D5.
-- **Q11 — Security reporting channel.** No private channel exists yet.
-  SECURITY.md now asks reporters to open an issue only to *request* a private
-  contact, with no details, and forbids sensitive data in that request.
-  Planned channel: GitHub Private Vulnerability Reporting, which can only be
-  enabled once the repository exists as a public project — it is **not
-  enabled or configured**. Release blocker: enable it and update SECURITY.md.
+- **Q11 — Security reporting channel.** Resolved on 2026-10-16: GitHub
+  Private Vulnerability Reporting is enabled on the public repository —
+  checked without authentication: the Security tab serves the **Report a
+  vulnerability** button and the public API endpoint returns
+  `{"enabled":true}`; the maintainer also confirmed the activation — and
+  SECURITY.md now directs reporters to it (D62). History: no private channel
+  existed; SECURITY.md asked reporters to open an issue only to *request* a
+  private contact, with no details, and forbade sensitive data in that
+  request; the planned channel was GitHub Private Vulnerability Reporting,
+  which could only be enabled once the repository existed as a public
+  project. Release blocker cleared.
 
 ## Inconsistencies resolved in this baseline
 

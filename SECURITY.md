@@ -31,21 +31,20 @@ design and are covered by tests:
 
 ## Reporting a vulnerability
 
-No private reporting channel exists yet. Until one does, do not disclose
-anything about the suspected vulnerability in public.
+Report suspected vulnerabilities through GitHub Private Vulnerability
+Reporting: open the **Security** tab of the repository and use the
+**Report a vulnerability** button, or go directly to
+<https://github.com/lukeXspy/promptvault/security/advisories/new> (a GitHub
+account is required). Do not disclose the issue in public before it has been
+addressed.
 
-- Open a public issue only to **request a private contact channel**. That
-  request must not contain technical details, exploit proof-of-concepts,
-  secrets, tokens, vault contents, variable values or any personal data.
-- A maintainer then arranges a private way to exchange the details.
+A minimal report is enough:
 
-No email address or URL exists for this yet; do not assume one. Once the
-project has a public repository, GitHub Private Vulnerability Reporting is
-the intended channel — it is **not enabled** and remains a pending release
-item (see [docs/ROADMAP.md](docs/ROADMAP.md) and DECISIONS Q11).
+- a short description of the issue and its impact;
+- reproduction steps — what you ran (exact command, stdout, stderr, exit
+  code) and what you expected instead;
+- the affected PromptVault version or commit, your operating system and
+  Node.js version.
 
-When the details are shared privately, a minimal synthetic example is enough:
-
-- what you ran (exact command, stdout, stderr, exit code) and what happened;
-- what you expected instead;
-- OS, Node.js version and PromptVault version/commit.
+Never include secrets, tokens, contents of personal vaults or personal data
+in the report or in any public issue.

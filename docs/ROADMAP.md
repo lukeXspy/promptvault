@@ -213,7 +213,7 @@ after this stage: 22 test files, 205 tests.
   Windows — every step except `render --copy` (real clipboard), see
   `scripts/smoke-pack.mjs`. Linux/macOS: covered by the CI matrix (Q3/D61).
 - [x] Docs synced; DECISIONS open questions updated (Q1 resolved in the
-  closure review; Q2 and Q11 tracked; Q3 resolved on 2026-10-16).
+  closure review; Q2 tracked; Q3 and Q11 resolved on 2026-10-16).
 - [ ] Release (tag/publish) only on explicit user request.
 
 Notes: executed as an audit-first pass (no new features). All five gates were
@@ -232,9 +232,11 @@ https://github.com/lukeXspy/promptvault/actions/runs/38943882635
 Closure review (same stage): the `license` field was briefly reverted to
 `UNLICENSED` to avoid a declared-but-undeliverable state (D57), then
 finalized when the maintainer confirmed holder and year — MIT with `LICENSE`
-added (D58). SECURITY.md now asks for a private contact via issue without
-any details and records GitHub Private Vulnerability Reporting as a future
-action, not enabled (Q11). All five gates and the packaging smoke were re-run
+added (D58). SECURITY.md initially asked for a private contact via issue
+without any details, recording GitHub Private Vulnerability Reporting as a
+future action; the channel was later enabled on the repository, and
+SECURITY.md now directs reporters to it (Q11 resolved on 2026-10-16; D62).
+All five gates and the packaging smoke were re-run
 green after each change (smoke: 21 checks; installed manifest confirms
 `license=MIT private=true`). Suite: 22 test files, 208 tests, green in seven
 consecutive full runs.

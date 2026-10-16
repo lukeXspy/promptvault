@@ -32,6 +32,5 @@ entries below describe the unreleased MVP (current package version: 0.1.0).
 
 ### Pending before the first release
 
-- Private vulnerability-reporting channel (see [SECURITY.md](SECURITY.md)).
 - `examples/` sample prompts (listed in the Stage 11 checklist; not created
   yet).
