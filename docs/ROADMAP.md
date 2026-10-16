@@ -213,7 +213,7 @@ after this stage: 22 test files, 205 tests.
   Windows — every step except `render --copy` (real clipboard), see
   `scripts/smoke-pack.mjs`. Linux/macOS: covered by the CI matrix (Q3/D61).
 - [x] Docs synced; DECISIONS open questions updated (Q1 resolved in the
-  closure review; Q2, Q3 and Q11 tracked).
+  closure review; Q2 and Q11 tracked; Q3 resolved on 2026-10-16).
 - [ ] Release (tag/publish) only on explicit user request.
 
 Notes: executed as an audit-first pass (no new features). All five gates were
@@ -225,8 +225,9 @@ were pinned by regression tests (excess arguments on `list` and `show` exit
 2; `add` leaves its `--file` source byte-identical). The CI workflow
 (Windows/Linux/macOS, Node.js 24, five gates) first ran on the hosted
 repository (2026-10-16): Ubuntu and macOS green; the Windows job failed on a
-test-only realpath assumption, fixed in D61 — do not claim a green matrix
-before a new remote run.
+test-only realpath assumption, fixed in D61. The follow-up run is green on
+all three jobs (Ubuntu, macOS, Windows):
+https://github.com/lukeXspy/promptvault/actions/runs/38943882635
 
 Closure review (same stage): the `license` field was briefly reverted to
 `UNLICENSED` to avoid a declared-but-undeliverable state (D57), then
@@ -243,7 +244,7 @@ consecutive full runs.
 - [ ] Ignore dotfiles in `prompts/` (revisit D7) if real users hit it.
 - [ ] `doctor --json`.
 - [ ] Optional coverage thresholds (see DECISIONS Q4); the first CI matrix
-  run is tracked in Stage 11 (Q3).
+  run (Stage 11, Q3) completed green on 2026-10-16.
 
 Do not start any Stage 12 item without an explicit request; candidate list is
 for future discussion only.

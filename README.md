@@ -23,9 +23,10 @@ Specifications live in [docs/](docs/):
 - Verified locally on Windows with Node.js 24 (all five quality gates and the
   packaging smoke). The CI workflow in `.github/workflows/ci.yml` ran its
   first matrix on 2026-10-16: Ubuntu and macOS passed; the Windows job failed
-  on a path-canonicalization assertion in one test. A test-only fix is
-  validated locally and a new remote run is pending — the matrix is not yet
-  verified end to end.
+  on a path-canonicalization assertion in one test. After a test-only fix,
+  the follow-up run is green on all three platforms (Ubuntu, macOS,
+  Windows):
+  https://github.com/lukeXspy/promptvault/actions/runs/38943882635
 - MIT licensed: `LICENSE` present with the confirmed copyright line
   (see [License](#license)).
 

@@ -617,6 +617,10 @@ Rationale: the matrix mirrors the verification the project cannot do on one
 machine; keeping the smoke manual avoids a second network-dependent job
 before the first run is even validated.
 
+Status note (2026-10-16): the workflow executed on the hosted repository —
+the first run's Windows-only failure was fixed (D61) and the follow-up run
+is green on all three jobs (Q3).
+
 ### D54 — Excess arguments are rejected, and that is tested
 
 Context: the Stage 11 audit probed `list extra` and `show <id> extra`; both
@@ -776,6 +780,11 @@ CI; post-fix it passes, as do the full suite (208 tests, 22 files; normal and
 aliased temp root) and the five gates. A new remote run is pending — CI must
 not be recorded as green before it executes.
 
+Status note (2026-10-16): resolved — the follow-up run (run 38943882635,
+commit `b59c533`) is green on all three jobs; the matrix is verified end to
+end:
+https://github.com/lukeXspy/promptvault/actions/runs/38943882635
+
 ## Open questions
 
 - **Q1 — License.** Resolved in the Stage 11 closure review: MIT finalized
@@ -786,12 +795,13 @@ not be recorded as green before it executes.
   whether `promptvault` is available, is undecided. Publishing requires
   explicit user request (AGENTS.md § 4). Stage 11 prepared local-tarball
   distribution only (D52); `private: true` remains and nothing was published.
-- **Q3 — CI.** Resolved in Stage 11 as scope (D53): the workflow exists for
-  Windows/Linux/macOS on Node.js 24 with the five gates. First hosted run
-  executed (run 38938850904, commit `7214524`, 2026-10-16): Ubuntu and macOS
-  green; the Windows job failed on a test-only expectation assumption, fixed
-  in D61. Until a new remote run is green, the matrix still counts as
-  unverified end to end.
+- **Q3 — CI.** Resolved in Stage 11 as scope (D53) and verified on
+  2026-10-16: the workflow exists for Windows/Linux/macOS on Node.js 24 with
+  the five gates. First hosted run (run 38938850904, commit `7214524`):
+  Ubuntu and macOS green; the Windows job failed on a test-only expectation
+  assumption, fixed in D61. The follow-up run (run 38943882635, commit
+  `b59c533`) is green on all three jobs — the matrix is verified end to end:
+  https://github.com/lukeXspy/promptvault/actions/runs/38943882635
 - **Q4 — Coverage thresholds.** No coverage gate is defined; tests are
   required per domain rule instead. Revisit if the suite needs a numeric
   floor.
