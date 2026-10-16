@@ -114,8 +114,10 @@ directly; pass resolved paths as parameters.
 
 - `init`: resolve vault → create directories (`recursive`) → idempotent
   success if already initialized.
-- `add`: resolve → validate id/title/tags → read body file (size, UTF-8, BOM
-  strip, CRLF → LF) → build prompt → serialize → exclusive write
+- `add`: resolve → validate id/title/tags and the body source (`--file` or
+  `--clipboard`, exactly one; D63) → read the body — file bytes or clipboard
+  text encoded to UTF-8 bytes — through the same decode step (size, UTF-8,
+  BOM strip, CRLF → LF) → build prompt → serialize → exclusive write
   (`fs.open(path, 'wx')`) → `EEXIST` → creation conflict (exit 2).
 - `list` / `search`: resolve → read `prompts/` entries (every entry must be a
   regular file, no symlinks, named `<id>.md`) → parse and validate ALL files
@@ -208,9 +210,11 @@ Validation order (deterministic error reporting): parse pairs → validate names
 | commander | CLI argument parsing | CLI skeleton (Stage 1) |
 | yaml | front-matter parsing (restricted options) | parsing stage |
 | zod | metadata schema validation | parsing stage |
-| clipboardy | `render --copy` clipboard access | clipboard stage only |
+| clipboardy | `render --copy` and `add --clipboard` clipboard access | clipboard stage (D49); `add` (D63) |
 | typescript, tsx, vitest, eslint, prettier, @types/node | dev tooling | bootstrap (Stage 1) |
 
+- Clipboard access loads `clipboardy` on demand (dynamic import, D63);
+  commands that never run a clipboard operation do not load it.
 - Runtime dependencies are plain ESM, no native builds.
 - New dependencies require justification, considered alternatives and user
   approval (AGENTS.md § 3). Verify real versions with `npm view <pkg> version`

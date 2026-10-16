@@ -406,6 +406,11 @@ Rationale: cheap pure checks run before any I/O, results are deterministic and
 consequently testable; the order mirrors ARCHITECTURE § 5 ("resolve → validate
 id/title/tags → read body file → build → serialize → exclusive write").
 
+Status note (D63, 2026-10-16): extended — the body-source check (exactly one
+of `--file`/`--clipboard`, a pure argument check) runs after `parseTagList`
+and before `resolvePromptsDir`, so missing or conflicting sources are
+reported before the file or the clipboard is read.
+
 ### D43 — `list`/`search` loading and error aggregation
 
 Context: CLI_SPEC §5.3 requires every entry in `prompts/` to be valid before
@@ -537,6 +542,15 @@ test touches a developer's clipboard.
 Rationale: mapping failures at one small border keeps the command logic
 testable without OS coupling; copying the output bytes makes the clipboard
 and stdout provably identical.
+
+Status note (D63, 2026-10-16): extended — the adapter also reads the
+clipboard (`readFromClipboard` for `add --clipboard`) with the same failure
+policy, and `clipboardy` is now imported dynamically, only when a clipboard
+operation runs.
+
+Status note (D64, 2026-10-16): the message wording in the Decision above is
+superseded — failures now use a fixed, generic message per operation and the
+system error text is never forwarded (see D64).
 
 ### D50 — `doctor` scan and report
 
@@ -813,6 +827,82 @@ commitment is made.
 Rationale: the channel now exists and is the project's own planned one;
 keeping the interim request would misdescribe the repository. Q11 is
 resolved, and no release blocker remains from the security channel.
+
+## Resolved post-MVP (requested improvement: `add --clipboard`)
+
+### D63 — `add --clipboard`: prompt body from the OS clipboard
+
+Context: prompts are often copied from chat windows, and the only body source
+was `--file`, which forced writing an intermediate file by hand before
+storing the text. The maintainer requested `--clipboard` and explicitly
+authorized extending the documented `add` contract (the "no new features"
+rule applied to the MVP closure only).
+
+Decision: `add` accepts exactly one body source — `--file <path>` or
+`--clipboard`; both or neither is a `UsageError` (exit 2). The check is pure
+and runs after `parseTagList` and before `resolvePromptsDir` (extends D42), so
+it is reported before any file or clipboard read. `--file` is no longer a
+commander `requiredOption`; its behavior is otherwise unchanged. `--clipboard`
+reads the OS clipboard once, only when requested (`--help` and argument
+errors never touch it), through `readFromClipboard` in
+`src/shared/clipboard.ts`. The returned string is encoded to UTF-8 bytes
+(`encodeText` in `src/core/text.ts`) and passed through the same `decodeSource`
+rules as `--file` (1 MiB byte limit, UTF-8, BOM strip, CRLF → LF) — no
+separate validation path and no temporary file. Empty or whitespace-only
+content is invalid data (exit 2, same message as an empty body file, nothing
+created); an unavailable clipboard is an I/O failure (exit 1). Read and write
+share one failure policy: a fixed, generic message per operation that never
+repeats the system error or any content (`clipboard unavailable: cannot read
+from the clipboard` / `cannot write to the clipboard`, D64). The
+adapter imports `clipboardy` dynamically, so commands that never run a
+clipboard operation do not load it. The command never modifies or clears the
+clipboard, never executes its content, and promises no atomicity between the
+clipboard read and the local write. Creation stays exclusive (`wx`): an
+existing id is never overwritten.
+
+Rationale: the change reuses the existing domain and storage flow end to end
+(read → decode → validate → serialize → exclusive write); the only new code
+is the pure source check and one adapter function. Tests replace the OS
+clipboard at the `clipboardy` border (the D49 seam): unit tests drive the
+real command wiring in-process with a mocked clipboard — including the lazy
+load — and spawned integration tests cover only paths that fail before any
+clipboard access, so no test touches a real clipboard. Out of scope by the
+request: stdin, interactive prompts, generated ids/titles, overwrite/
+`--force`, batch import, GUI, and any change to the package name, version or
+publication state.
+
+### D64 — clipboard failures never forward the dependency error
+
+Context: review of the clipboard failure path after the D63 report. The shared
+wrapper forwarded the raw `error.message` of whatever failed
+(`clipboard unavailable: <system message>`). `execa` (used by `clipboardy`
+5.3.2) composes `error.message` from the command, its captured stderr and its
+captured stdout; for a clipboard read the captured stdout is the clipboard
+content itself, so the raw text could carry prompt content to stderr through
+`reportError` (`promptvault: error: <message>`). Collapsing whitespace and
+escaping control characters does not remove such data, and the other platform
+paths (clipboardy's own wrappers, bundled prebuilt binaries, platform tools)
+give no content-free guarantee either. The wrapper is shared by read
+(`add --clipboard`) and write (`render --copy`), so the flaw affected both
+operations.
+
+Decision: `readFromClipboard` and `copyToClipboard` throw `IoError` (exit 1,
+unchanged) with a fixed, generic message per operation — `clipboard
+unavailable: cannot read from the clipboard` and `clipboard unavailable:
+cannot write to the clipboard`. The thrown error is not attached, repeated or
+logged, so neither clipboard bytes nor system values can appear in
+stdout/stderr. `render --copy` keeps every other behavior (no success claim,
+empty stdout, exit 1). Tests drive simulated failures carrying a sensitive
+marker through the adapter, the in-process `add --clipboard` and
+`render --copy`, and assert the marker never appears in the message or the
+written output; the fixed strings are pinned in unit tests and the catalog.
+
+Rationale: making "no content in errors" a guarantee requires never forwarding
+third-party text; sanitizing arbitrary text cannot provide that guarantee.
+Trade-off accepted: the system diagnostics (`xsel is not installed`,
+display-server hints) no longer appear in the message — the README documents
+headless failure and the exit code still identifies the class. This supersedes
+the message wording fixed in D49 and summarized in D63.
 
 ## Open questions
 

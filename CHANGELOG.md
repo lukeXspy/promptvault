@@ -10,8 +10,12 @@ entries below describe the unreleased MVP (current package version: 0.1.0).
 ### Added
 
 - `init` — create the vault (`prompts/` only; idempotent).
-- `add <id> --title <title> --file <path> [--tags <csv>]` — store a prompt
-  with exclusive creation and canonical UTF-8/LF output.
+- `add <id> --title <title> (--file <path> | --clipboard) [--tags <csv>]` —
+  store a prompt with exclusive creation and canonical UTF-8/LF output; the
+  body comes from a file or from the OS clipboard (read only when requested;
+  empty clipboard → exit 2, clipboard unavailable → exit 1). Clipboard
+  failures (`add` and `render --copy`) use fixed messages that never repeat
+  the system error or any clipboard content.
 - `list [--tag <tag>] [--json]` and `search <query> [--tag <tag>] [--json]` —
   ordinal ordering, all-or-nothing validation, control-character-safe output.
 - `show <id>` — byte-exact body output.

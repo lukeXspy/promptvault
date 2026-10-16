@@ -126,7 +126,9 @@ describe("render --copy", () => {
   it("keeps stdout empty and claims nothing when the clipboard fails", async () => {
     const vault = temp("pv-render-copy-");
     seed(vault, "one", "{{x}}\n");
-    writeMock.mockRejectedValue(new Error("no clipboard here"));
+    writeMock.mockRejectedValue(
+      new Error("failed to copy: SENSITIVE-MARKER-RENDERED-BODY"),
+    );
 
     const error = await build()
       .parseAsync([
@@ -144,11 +146,13 @@ describe("render --copy", () => {
 
     expect(error).toBeInstanceOf(IoError);
     expect((error as IoError).message).toBe(
-      "clipboard unavailable: no clipboard here",
+      "clipboard unavailable: cannot write to the clipboard",
     );
+    expect((error as IoError).message).not.toContain("SENSITIVE-MARKER");
+    expect((error as IoError).exitCode).toBe(1);
     expect(writeMock).toHaveBeenCalledTimes(1);
     expect(written(stdoutSpy)).toBe("");
-    expect(written(stderrSpy)).toBe("");
+    expect(written(stderrSpy)).not.toContain("SENSITIVE-MARKER");
   });
 
   it("does not touch the clipboard without --copy", async () => {

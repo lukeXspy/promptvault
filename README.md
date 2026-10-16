@@ -33,7 +33,8 @@ Specifications live in [docs/](docs/):
 ## Requirements
 
 - Node.js 24 or newer (`engines.node` is `>=24`).
-- A desktop session only for `render --copy` (it writes to the OS clipboard).
+- A desktop session only for clipboard operations (`render --copy`,
+  `add --clipboard`).
 
 ## Development setup
 
@@ -67,7 +68,7 @@ after a release is published.
 
 The repository also ships a packaging smoke test that builds, packs, installs
 the tarball into a throwaway project and exercises the installed CLI
-(no clipboard, no real vault):
+(no clipboard access, no real vault):
 
     npm run smoke:pack
 
@@ -78,6 +79,7 @@ Examples below assume `promptvault` resolves to the binary installed above.
 
     promptvault init
     promptvault add code-review --title "Review a code change" --file review.md --tags "review,development"
+    promptvault add create-landing --title "Create a landing page" --clipboard
     promptvault list
     promptvault search review --json
     promptvault render code-review --var language=TypeScript
@@ -85,15 +87,17 @@ Examples below assume `promptvault` resolves to the binary installed above.
     promptvault doctor
 
 This mirrors the walkthrough in [docs/CLI_SPEC.md](docs/CLI_SPEC.md) §7. The
-one step not covered by the automated packaging smoke is
-`render --var ... --copy`, which requires a real desktop clipboard.
+steps not covered by the automated packaging smoke are `render --var ... --copy`
+and a successful `add --clipboard`, which both require a real desktop
+clipboard (the smoke only checks that `add` rejects conflicting sources before
+any read).
 
 ### Commands at a glance
 
 | Command | Purpose |
 |---|---|
 | `init` | Create `<vault>/prompts/`; idempotent |
-| `add <id> --title <title> --file <path> [--tags <csv>]` | Add a prompt from a body file |
+| `add <id> --title <title> (--file <path> | --clipboard) [--tags <csv>]` | Add a prompt from a body file or the clipboard |
 | `list [--tag <tag>] [--json]` | List prompts (`<id>` TAB `<title>`); validates all files first |
 | `show <id>` | Print the stored body byte-exact |
 | `search <query> [--tag <tag>] [--json]` | Case-insensitive literal substring search |
@@ -164,11 +168,18 @@ no password and no protection. Do not store secrets in prompts.
 
 ## Clipboard notes
 
-`render --copy` writes the rendered text to the OS clipboard through the
-`clipboardy` package. Clipboard access can fail in headless environments
-(then: exit 1, nothing on stdout). The failure path is covered by unit tests
-with a mocked clipboard; the real call has been exercised manually on Windows
-only.
+`render --copy` writes the rendered text to the OS clipboard and
+`add --clipboard` reads the prompt body from it, both through the `clipboardy`
+package. Clipboard access can fail in headless environments (then: exit 1 —
+for `add`, nothing is created); the message is fixed (`clipboard unavailable:
+cannot read from the clipboard` / `cannot write to the clipboard`) and never
+repeats the system error or any content. `--clipboard` content passes through
+the same canonicalization and limits as `--file` (UTF-8, BOM stripped,
+CRLF → LF, max 1 MiB); an empty or whitespace-only clipboard is invalid data
+(exit 2). The failure paths — and, for `add`, the full read flow — are covered
+by unit tests with a mocked clipboard; the real `render --copy` call has been
+exercised manually on Windows only. `clipboardy` is loaded only when a
+clipboard operation actually runs.
 
 ## Known limitations
 

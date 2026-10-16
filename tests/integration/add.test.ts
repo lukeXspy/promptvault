@@ -279,7 +279,7 @@ describe("promptvault add", () => {
     expect(readdirSync(path.join(vault, "prompts"))).toEqual([]);
   });
 
-  it("requires --title and --file", () => {
+  it("requires --title", () => {
     const vault = temp("pv-add-");
     runCli(["--vault", vault, "init"]);
 
@@ -288,6 +288,48 @@ describe("promptvault add", () => {
     expect(status).toBe(2);
     expect(stdout).toBe("");
     expect(stderr).toContain("promptvault: error:");
+  });
+
+  it("requires exactly one body source, checked before any read", () => {
+    const vault = temp("pv-add-");
+    runCli(["--vault", vault, "init"]);
+
+    const missing = runCli(["--vault", vault, "add", "a", "--title", "A"]);
+    expect(missing.status).toBe(2);
+    expect(missing.stdout).toBe("");
+    expect(missing.stderr).toBe(
+      "promptvault: error: missing body source: use --file <path> or --clipboard\n",
+    );
+
+    // The file path does not exist on purpose: the conflict must be reported
+    // without attempting to read the file (and before any clipboard access).
+    const conflicting = runCli([
+      "--vault",
+      vault,
+      "add",
+      "a",
+      "--title",
+      "A",
+      "--file",
+      path.join(vault, "missing-body.md"),
+      "--clipboard",
+    ]);
+    expect(conflicting.status).toBe(2);
+    expect(conflicting.stdout).toBe("");
+    expect(conflicting.stderr).toBe(
+      "promptvault: error: conflicting body sources: use --file <path> or --clipboard, not both\n",
+    );
+    expect(conflicting.stderr).not.toContain("cannot read body file");
+    expect(readdirSync(path.join(vault, "prompts"))).toEqual([]);
+  });
+
+  it("documents --clipboard in add --help", () => {
+    const { status, stdout, stderr } = runCli(["add", "--help"]);
+
+    expect(status).toBe(0);
+    expect(stdout).toContain("--clipboard");
+    expect(stdout).toContain("--file <path>");
+    expect(stderr).toBe("");
   });
 
   it("fails with exit 1 when the body file cannot be read", () => {

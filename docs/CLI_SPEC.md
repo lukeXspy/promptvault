@@ -34,7 +34,7 @@ paths). No discovery of vaults in parent directories.
 |---|---|---|
 | 0 | success | command completed; empty results are success |
 | 1 | unexpected failure, I/O or clipboard | unreadable file, clipboard unavailable |
-| 2 | invalid usage or data; missing variable; creation conflict | bad flag; unknown front-matter property; `add` for an existing id |
+| 2 | invalid usage or data; missing variable; creation conflict | bad flag; conflicting `add` body sources; unknown front-matter property; `add` for an existing id |
 | 3 | prompt not found | `show missing-id`; also an id in invalid format |
 
 ## 4. Shared output shapes
@@ -81,13 +81,22 @@ $ echo $?
 
 ### 5.2 add
 
-Synopsis: `promptvault add <id> --title <title> --file <path> [--tags <csv>]`
+Synopsis: `promptvault add <id> --title <title> (--file <path> | --clipboard) [--tags <csv>]`
 
 - `<id>`: slug (`^[a-z0-9]+(?:-[a-z0-9]+)*$`), max 80 chars.
 - `--title`: required; trimmed non-empty, single line, max 120 chars.
-- `--file`: required; the file's content is the body. Max 1 MiB, valid UTF-8,
+- Exactly one body source is required: `--file <path>` or `--clipboard`.
+  Passing neither or both is a usage error (exit 2), reported before the file
+  or the clipboard is read.
+- `--file <path>`: the file's content is the body. Max 1 MiB, valid UTF-8,
   BOM stripped, CRLF normalized to LF. The file is body only — no metadata is
   imported from it.
+- `--clipboard`: the text currently in the OS clipboard is the body, read
+  once, only when this option is requested (`--help` and argument errors never
+  access the clipboard). The text passes through the same canonicalization and
+  limits as `--file`. An empty or whitespace-only clipboard is invalid data
+  (exit 2); an unavailable clipboard is an I/O failure (exit 1). The clipboard
+  is never modified or cleared, and its content is never echoed in messages.
 - `--tags`: optional CSV. Items are trimmed; an invalid or empty item → exit
   2. Max 20; deduplicated; sorted ordinally.
 - The vault must be initialized (`prompts/` exists); otherwise exit 2 with a
@@ -96,11 +105,18 @@ Synopsis: `promptvault add <id> --title <title> --file <path> [--tags <csv>]`
 - If `<id>.md` already exists → exit 2 (creation conflict).
 - Success message on stderr; stdout stays empty.
 
-Example:
+Examples:
 
 ```
 $ promptvault add code-review --title "Review a code change" --file review.md --tags "review, development"
 promptvault: added prompt "code-review"
+$ echo $?
+0
+```
+
+```
+$ promptvault add create-landing --title "Create a landing page" --clipboard --tags "frontend,sites"
+promptvault: added prompt "create-landing"
 $ echo $?
 0
 ```
@@ -243,6 +259,8 @@ $ echo $?
 - `promptvault: error: invalid id "<id>": must match ^[a-z0-9]+(?:-[a-z0-9]+)*$ and be at most 80 characters`
 - `promptvault: error: invalid tag "<value>": must match ^[a-z0-9]+(?:-[a-z0-9]+)*$`
 - `promptvault: error: invalid title: must be non-empty, single line, at most 120 characters`
+- `promptvault: error: missing body source: use --file <path> or --clipboard`
+- `promptvault: error: conflicting body sources: use --file <path> or --clipboard, not both`
 - `promptvault: error: invalid --var: expected key=value`
 - `promptvault: error: invalid --var key "<key>"`
 - `promptvault: error: missing variables: <names>`
@@ -250,7 +268,8 @@ $ echo $?
 - `promptvault: error: duplicate --var key: <name>`
 - `promptvault: error: invalid prompt file <name>: <reason>` (list/search join
   multiple findings with `; `)
-- `promptvault: error: clipboard unavailable: <system message>`
+- `promptvault: error: clipboard unavailable: cannot read from the clipboard`
+- `promptvault: error: clipboard unavailable: cannot write to the clipboard`
 
 Tests pin behavior primarily by exit code, stdout/stderr split and message
 prefix; update this catalog whenever wording changes.
@@ -260,6 +279,7 @@ prefix; update this catalog whenever wording changes.
 ```
 $ promptvault init
 $ promptvault add code-review --title "Review a code change" --file review.md --tags "review,development"
+$ promptvault add create-landing --title "Create a landing page" --clipboard
 $ promptvault list
 $ promptvault search review --json
 $ promptvault render code-review --var language=TypeScript

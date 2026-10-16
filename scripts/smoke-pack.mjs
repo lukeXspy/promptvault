@@ -5,7 +5,9 @@
  * the installed CLI end to end.
  *
  * Safety properties:
- * - never touches the real clipboard (`render --copy` is not used);
+ * - never touches the real clipboard (`render --copy` is not used, and the
+ *   `add` clipboard check only exercises the conflicting-sources path, which
+ *   must fail before any clipboard access);
  * - never reads or writes a real vault: `PROMPTVAULT_HOME` and `--vault`
  *   always point into the smoke's own temp directory;
  * - runs the CLI from a temporary working directory, not the repository.
@@ -238,6 +240,39 @@ try {
     "add wrote prompts/code-review.md",
     existsSync(path.join(vault, "prompts", "code-review.md")),
     "stored file missing",
+  );
+
+  const addHelp = cli(["add", "--help"]);
+  expect(
+    "add --help documents both body sources (--file and --clipboard)",
+    addHelp.status === 0 &&
+      addHelp.stdout.includes("--file <path>") &&
+      addHelp.stdout.includes("--clipboard") &&
+      addHelp.stderr === "",
+    JSON.stringify(addHelp),
+  );
+
+  // The file path does not exist on purpose: a conflicting-sources error must
+  // be reported without attempting to read the file (and before any
+  // clipboard access), so this check never touches a real clipboard.
+  const addConflict = cli([
+    "add",
+    "conflict-demo",
+    "--title",
+    "Conflict demo",
+    "--file",
+    path.join(tempRoot, "missing-body.md"),
+    "--clipboard",
+    "--vault",
+    vault,
+  ]);
+  expect(
+    "add rejects conflicting body sources before any read (exit 2)",
+    addConflict.status === 2 &&
+      addConflict.stdout === "" &&
+      addConflict.stderr ===
+        "promptvault: error: conflicting body sources: use --file <path> or --clipboard, not both\n",
+    JSON.stringify(addConflict),
   );
 
   const list = cli(["list", "--vault", vault]);

@@ -241,6 +241,38 @@ green after each change (smoke: 21 checks; installed manifest confirms
 `license=MIT private=true`). Suite: 22 test files, 208 tests, green in seven
 consecutive full runs.
 
+## Post-MVP — requested improvements
+
+### `add --clipboard` (2026-10-16, done)
+
+Requested after the MVP closure, with explicit authorization to change the
+documented `add` contract (the "no new features" rule applied to the MVP
+closure only).
+
+- [x] Contract: `add` takes exactly one body source — `--file <path>` or
+  `--clipboard`; neither/both → exit 2, reported before any read (extends
+  D42's order). `--file` behavior is otherwise unchanged.
+- [x] `--clipboard` reads the clipboard once, only when requested; same
+  canonicalization as `--file` (1 MiB UTF-8 bytes, BOM strip, CRLF → LF);
+  empty/whitespace → exit 2, unavailable → exit 1; no temp file, no clipboard
+  modification, exclusive write preserved.
+- [x] Adapter: `readFromClipboard` in `src/shared/clipboard.ts` on the shared
+  clipboard border; `clipboardy` loads on demand (dynamic import); failures
+  use fixed messages that never forward the system error or content (D64).
+- [x] Tests: unit suite drives the real wiring in-process with the OS
+  clipboard mocked at the `clipboardy` border (no real clipboard in CI);
+  spawned integration covers source selection only; failure tests assert
+  sensitive markers never reach messages or written output (D64).
+- [x] Docs: CLI_SPEC § 3/§ 5.2/§ 6/§ 7, ARCHITECTURE § 5/§ 10, DECISIONS
+  D63/D64 (+ status notes in D42/D49), README, CHANGELOG.
+- [x] Five quality gates and `smoke:pack` re-run green; smoke now verifies
+  `add --help` documents `--clipboard` and conflicting sources are rejected
+  before any read.
+
+Notes: out of scope by the request — stdin, interactive prompts, auto
+id/title, overwrite/`--force`, batch import, GUI, package rename/version,
+publishing.
+
 ## Stage 12+ — Post-MVP candidates (only if requested)
 
 - [ ] Ignore dotfiles in `prompts/` (revisit D7) if real users hit it.
