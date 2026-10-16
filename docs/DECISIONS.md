@@ -749,6 +749,33 @@ LF and the working tree always LF (the explicit `eol=lf` overrides
 `autocrlf`), except the two Windows script extensions. The change rewrites
 nothing by itself; it takes effect at add/checkout time.
 
+### D61 — Windows CI failure: `realpathSync` vs `realpath` on alias paths
+
+Context: the first hosted CI run (run 38938850904, commit `7214524`,
+2026-10-16) failed on `gates (windows-latest)` in the `Test` step; every other
+step and platform was green. The anonymous job-log API returned 403, so the
+failure detail came from the check-run annotations endpoint:
+`tests/unit/prompts-storage.test.ts` ("returns the real path of an existing
+prompts directory") expected `C:\Users\RUNNER~1\...` and received
+`C:\Users\runneradmin\...`. The runner's temp directory is exposed in 8.3
+short form, and the two Node APIs disagree on such alias paths:
+`realpathSync` keeps the input form while `realpath` (`node:fs/promises`) —
+the API `resolvePromptsDir` uses — returns the canonical name.
+
+Decision: fix the test only; the expected value is computed with
+`await realpath(path.join(vault, "prompts"))` (`node:fs/promises`), the same
+API as the command contract, with a comment pointing here. No product change:
+the command already returned the canonical path.
+
+Rationale: the expectation assumed both realpath implementations agree, which
+they do not on Windows for 8.3 short names or case variants. Reproduced
+locally by running the affected test with `TMPDIR`/`TMP`/`TEMP` pointing at a
+case variant of the real temp path (8.3 generation is disabled on the local
+machine, registry state 1): pre-fix it failed with the same assertion shape as
+CI; post-fix it passes, as do the full suite (208 tests, 22 files; normal and
+aliased temp root) and the five gates. A new remote run is pending — CI must
+not be recorded as green before it executes.
+
 ## Open questions
 
 - **Q1 — License.** Resolved in the Stage 11 closure review: MIT finalized
@@ -760,9 +787,11 @@ nothing by itself; it takes effect at add/checkout time.
   explicit user request (AGENTS.md § 4). Stage 11 prepared local-tarball
   distribution only (D52); `private: true` remains and nothing was published.
 - **Q3 — CI.** Resolved in Stage 11 as scope (D53): the workflow exists for
-  Windows/Linux/macOS on Node.js 24 with the five gates. Still pending: the
-  first execution on a hosted repository, which requires a push (not done).
-  Until it runs, the matrix counts as configured, not verified.
+  Windows/Linux/macOS on Node.js 24 with the five gates. First hosted run
+  executed (run 38938850904, commit `7214524`, 2026-10-16): Ubuntu and macOS
+  green; the Windows job failed on a test-only expectation assumption, fixed
+  in D61. Until a new remote run is green, the matrix still counts as
+  unverified end to end.
 - **Q4 — Coverage thresholds.** No coverage gate is defined; tests are
   required per domain rule instead. Revisit if the suite needs a numeric
   floor.

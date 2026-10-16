@@ -15,14 +15,17 @@ Specifications live in [docs/](docs/):
 
 - MVP complete against the documented contract: `init`, `add`, `list`, `show`,
   `search`, `render` (with `--copy`) and `doctor`.
-- **Not published**: no npm release, no tags and no remote repository — a
-  local Git repository now exists (branch `main`, no commits yet). Installing
-  from a local tarball (below) is the only supported distribution path for
-  now.
+- **Public repository**: https://github.com/lukeXspy/promptvault — the local
+  Git history (branch `main`) is pushed there.
+- **Not published**: no npm release and no tags; the package stays private
+  (`private: true`). Installing from a local tarball (below) is the only
+  supported distribution path for now.
 - Verified locally on Windows with Node.js 24 (all five quality gates and the
-  packaging smoke). The workflow in `.github/workflows/ci.yml` is configured
-  for Windows/Linux/macOS but has not run yet — treat that matrix as
-  configured, not verified.
+  packaging smoke). The CI workflow in `.github/workflows/ci.yml` ran its
+  first matrix on 2026-10-16: Ubuntu and macOS passed; the Windows job failed
+  on a path-canonicalization assertion in one test. A test-only fix is
+  validated locally and a new remote run is pending — the matrix is not yet
+  verified end to end.
 - MIT licensed: `LICENSE` present with the confirmed copyright line
   (see [License](#license)).
 

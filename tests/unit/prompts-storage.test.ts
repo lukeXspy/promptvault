@@ -1,10 +1,5 @@
-import {
-  mkdirSync,
-  readFileSync,
-  realpathSync,
-  symlinkSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { realpath } from "node:fs/promises";
 import path from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import { serializePrompt } from "../../src/core/prompt.js";
@@ -41,8 +36,10 @@ describe("resolvePromptsDir", () => {
   it("returns the real path of an existing prompts directory", async () => {
     const vault = temp("pv-store-");
     mkdirSync(path.join(vault, "prompts"));
+    // Expected canonicalization uses fs/promises realpath, the same API as
+    // the command contract: realpathSync keeps Windows alias forms (D61).
     await expect(resolvePromptsDir(vault)).resolves.toBe(
-      realpathSync(path.join(vault, "prompts")),
+      await realpath(path.join(vault, "prompts")),
     );
   });
 

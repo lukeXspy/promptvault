@@ -211,7 +211,7 @@ after this stage: 22 test files, 205 tests.
   test (`npm run smoke:pack`; D52).
 - [x] Walkthrough in CLI_SPEC § 7 exercised against the installed tarball on
   Windows — every step except `render --copy` (real clipboard), see
-  `scripts/smoke-pack.mjs`. Linux/macOS: CI configured, not yet executed.
+  `scripts/smoke-pack.mjs`. Linux/macOS: covered by the CI matrix (Q3/D61).
 - [x] Docs synced; DECISIONS open questions updated (Q1 resolved in the
   closure review; Q2, Q3 and Q11 tracked).
 - [ ] Release (tag/publish) only on explicit user request.
@@ -223,8 +223,10 @@ and a per-worker temp-directory leak in the `runCli` tripwire (D56; 148
 residue entries removed, zero new per run). Three untested contract behaviors
 were pinned by regression tests (excess arguments on `list` and `show` exit
 2; `add` leaves its `--file` source byte-identical). The CI workflow
-(Windows/Linux/macOS, Node.js 24, five gates) is configured but has not run —
-do not claim matrix results before the first remote execution.
+(Windows/Linux/macOS, Node.js 24, five gates) first ran on the hosted
+repository (2026-10-16): Ubuntu and macOS green; the Windows job failed on a
+test-only realpath assumption, fixed in D61 — do not claim a green matrix
+before a new remote run.
 
 Closure review (same stage): the `license` field was briefly reverted to
 `UNLICENSED` to avoid a declared-but-undeliverable state (D57), then
