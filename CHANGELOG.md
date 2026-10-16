@@ -21,8 +21,11 @@ entries below describe the unreleased MVP (current package version: 0.1.0).
 - Documentation set: `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, issue and
   pull request templates, and the specs under `docs/`.
 - CI workflow for Windows/Linux/macOS (Node.js 24) and a packaging smoke
-  script (`npm run smoke:pack`). The workflow is configured but has not run
-  yet — see [docs/ROADMAP.md](docs/ROADMAP.md).
+  script (`npm run smoke:pack`). The workflow executed on GitHub: the first
+  run failed only on Windows (a test expectation about canonical paths); a
+  test-only fix followed, and subsequent runs passed on all three platforms
+  — see
+  https://github.com/lukeXspy/promptvault/actions/runs/38943882635.
 - MIT license: `LICENSE` file with the confirmed copyright line
   (`Copyright (c) 2026 Lucas Enzo Marcon`) and the SPDX field in
   `package.json`.
@@ -30,6 +33,5 @@ entries below describe the unreleased MVP (current package version: 0.1.0).
 ### Pending before the first release
 
 - Private vulnerability-reporting channel (see [SECURITY.md](SECURITY.md)).
-- First execution of the CI matrix on a hosted repository.
 - `examples/` sample prompts (listed in the Stage 11 checklist; not created
   yet).

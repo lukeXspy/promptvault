@@ -66,8 +66,9 @@ TypeScript sources directly through `tsx`).
 ## Scope
 
 Welcome: bug reports with minimal reproductions, regression tests,
-documentation fixes, platform verification (Linux and macOS runs are
-especially useful right now, since the CI matrix has not run yet), and fixes
+documentation fixes, platform verification (the CI matrix runs Ubuntu, macOS
+and Windows on Node.js 24 and is green — see
+https://github.com/lukeXspy/promptvault/actions/runs/38943882635), and fixes
 that make existing documented behavior hold.
 
 Out of scope without prior discussion: features beyond `docs/PRD.md`,
